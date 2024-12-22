@@ -26,7 +26,9 @@ function addermulter(vector, target, sum=0)
 end
 
 function addermulterconcer(vector, target, sum=0)
-    if length(vector)==1 
+    if sum>target
+        return false
+    elseif length(vector)==1 
         if sum+vector[1]==target || sum*vector[1]==target ||
             Meta.parse(string(sum)*string(vector[1]))==target
             return true
@@ -34,10 +36,10 @@ function addermulterconcer(vector, target, sum=0)
             return false
         end
     else
-        return any([addermulterconcer(vector[2:end], target, sum+vector[1]) ,
-            addermulterconcer(vector[2:end], target, sum*vector[1]),
+        return addermulterconcer(vector[2:end], target, sum+vector[1]) ||
+            addermulterconcer(vector[2:end], target, sum*vector[1]) ||
             addermulterconcer(vector[2:end], target,
-            Meta.parse(string(sum)*string(vector[1])))])
+            Meta.parse(string(sum)*string(vector[1])))
     end
 end
 
@@ -54,12 +56,13 @@ end
 function calibrationsummer2(input)
     out=Threads.Atomic{Int}(0)
     Threads.@threads for i=1:size(input)[1]
-        if addermulterconcer(input[i,2],input[i,1])
+        if addermulterconcer(input[i,2][2:end],input[i,1], input[i,2][1])
             Threads.atomic_add!(out, input[i,1])
         end
     end
     return out
 end
+
 
 
 input=inputreader("input.txt")
